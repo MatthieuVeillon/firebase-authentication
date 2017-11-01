@@ -18,29 +18,10 @@ const database = firebase.database();
 class App extends Component {
   constructor() {
     super();
-    this.state = { email: "" };
   }
 
-  sendEmail = () => {
-    database
-      .ref("email")
-      .set(this.input.value)
-      .then(() =>
-        database.ref("email").on("value", data => {
-          this.setState({ email: data.val() });
-        })
-      );
-    console.log(this.input.value);
-  };
-
   render() {
-    return (
-      <div className="App">
-        <input type="text" ref={node => (this.input = node)} />
-        <button onClick={this.sendEmail}>confirm your email</button>
-        <div>{this.state.email}</div>
-      </div>
-    );
+    return <div className="App" />;
   }
 }
 
