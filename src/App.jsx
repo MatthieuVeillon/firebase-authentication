@@ -20,14 +20,70 @@ const storageRef = firebase.storage();
 class App extends Component {
   constructor() {
     super();
+    this.state = {
+      warning: "",
+      currentUser: "",
+      pictures: []
+    };
   }
 
   componentDidMount() {
     firebase
       .auth()
       .signInWithPopup(provider)
-      .then(result => console.log(result.user));
+      .then(result => {
+        this.setState({ currentUser: result.user.displayName });
+      });
+    this.updatePicturesFromUsers();
   }
+
+  updatePicturesFromUsers = () => {
+    database.ref("/").on("value", snapshot => {
+      for (let property in snapshot.val()) {
+        this.setState(st => ({
+          pictures: st.pictures.concat([
+            { [property]: snapshot.val()[property] }
+          ])
+        }));
+      }
+    });
+  };
+
+  displayPicturesFromUsers = object => {
+    let objectProperty = Object.keys(object)[0];
+    let childrenObject = object[Object.keys(object)[0]];
+
+    console.log("parent", objectProperty);
+    console.log("children", childrenObject);
+    // <div>{objectProperty}</div>
+
+    return (
+      <div>
+        <div>{objectProperty}</div>
+        <div className="gallery">
+          {Object.keys(childrenObject).map((keyName, keyIndex) => (
+            <img className="pictures" src={childrenObject[keyName]} alt="" />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  uploadUrls = file => {
+    storageRef
+      .ref()
+      .child(file.name)
+      .getDownloadURL()
+      // .then(url => this.setState({ loc: url }));
+      .then(url => {
+        console.log("url", url);
+        database
+          .ref()
+          .child(this.state.currentUser)
+          .push()
+          .set(url);
+      });
+  };
 
   doUpload = event => {
     let file = event.target.files[0];
@@ -35,7 +91,11 @@ class App extends Component {
     storageRef
       .ref()
       .child(file.name)
-      .put(file);
+      .put(file)
+      .then(
+        this.setState({ warning: `${file.name} has been succesfully uploaded` })
+      )
+      .then(this.uploadUrls(file));
   };
 
   render() {
@@ -43,6 +103,8 @@ class App extends Component {
       <div className="App">
         <p>please upload your picture</p>
         <input onChange={this.doUpload} type="file" />
+        <p>{this.state.warning}</p>
+        <div>{this.state.pictures.map(this.displayPicturesFromUsers)}</div>
       </div>
     );
   }
