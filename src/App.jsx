@@ -46,11 +46,6 @@ class App extends Component {
         ]);
       }
       this.setState({ pictures: pictureObject });
-      // this.setState(st => ({
-      //   pictures: st.pictures.concat([
-      //     { [property]: snapshot.val()[property] }
-      //   ])
-      // }));
     });
   };
 
@@ -77,19 +72,10 @@ class App extends Component {
   uploadUrls = file => {
     console.log("file", file.name);
 
-    // storageRef
-    //   .ref(this.folder.value)
-    //   .child("picture.jpg")
-    //   .getDownloadURL()
-    //   .then(url => {
-    //     console.log("url", url);
-    //     this.setState({ loc: url });
-    //   });
     storageRef
       .ref()
       .child(`${file.name}`)
       .getDownloadURL()
-      // .then(url => this.setState({ loc: url }));
       .then(url => {
         database
           .ref()
