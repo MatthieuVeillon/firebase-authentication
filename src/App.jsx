@@ -34,7 +34,6 @@ class App extends Component {
       .then(result => {
         this.setState({ currentUser: result.user.displayName });
       });
-    this.updatePicturesFromUsers();
   }
 
   updatePicturesFromUsers = () => {
@@ -70,6 +69,7 @@ class App extends Component {
   };
 
   uploadUrls = file => {
+    console.log("file", file.name);
     storageRef
       .ref()
       .child(file.name)
@@ -78,10 +78,10 @@ class App extends Component {
       .then(url => {
         console.log("url", url);
         database
-          .ref()
-          .child(this.state.currentUser)
-          .push()
-          .set(url);
+          .ref("/")
+          .child("test")
+          .push(url)
+          .then(this.updatePicturesFromUsers());
       });
   };
 
