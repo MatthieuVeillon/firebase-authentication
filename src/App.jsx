@@ -38,13 +38,19 @@ class App extends Component {
 
   updatePicturesFromUsers = () => {
     database.ref("/").on("value", snapshot => {
+      let pictureObject = [];
+      console.log("snap", snapshot.val());
       for (let property in snapshot.val()) {
-        this.setState(st => ({
-          pictures: st.pictures.concat([
-            { [property]: snapshot.val()[property] }
-          ])
-        }));
+        pictureObject = pictureObject.concat([
+          { [property]: snapshot.val()[property] }
+        ]);
       }
+      this.setState({ pictures: pictureObject });
+      // this.setState(st => ({
+      //   pictures: st.pictures.concat([
+      //     { [property]: snapshot.val()[property] }
+      //   ])
+      // }));
     });
   };
 
@@ -70,18 +76,26 @@ class App extends Component {
 
   uploadUrls = file => {
     console.log("file", file.name);
+
+    // storageRef
+    //   .ref(this.folder.value)
+    //   .child("picture.jpg")
+    //   .getDownloadURL()
+    //   .then(url => {
+    //     console.log("url", url);
+    //     this.setState({ loc: url });
+    //   });
     storageRef
       .ref()
-      .child(file.name)
+      .child(`${file.name}`)
       .getDownloadURL()
       // .then(url => this.setState({ loc: url }));
       .then(url => {
-        console.log("url", url);
         database
-          .ref("/")
-          .child("test")
+          .ref()
+          .child(this.state.currentUser)
           .push(url)
-          .then(this.updatePicturesFromUsers());
+          .then(() => this.updatePicturesFromUsers());
       });
   };
 
@@ -95,11 +109,13 @@ class App extends Component {
       .then(
         this.setState({ warning: `${file.name} has been succesfully uploaded` })
       )
-      .then(this.uploadUrls(file));
+      .then(() => this.uploadUrls(file));
   };
 
   render() {
-    return (
+    return !this.state.currentUser ? (
+      <p>Please log in</p>
+    ) : (
       <div className="App">
         <p>please upload your picture</p>
         <input onChange={this.doUpload} type="file" />
